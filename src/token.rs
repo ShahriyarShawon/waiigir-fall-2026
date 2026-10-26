@@ -74,6 +74,13 @@ pub struct Token {
     pub literal: String
 }
 
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Token - Type: {} - Literal: {}", self.ttype, self.literal)
+    }
+
+}
+
 
 fn keywords(key: &str) -> TokenType {
     match key {
