@@ -8,7 +8,15 @@ pub enum TokenType {
     Ident,
     Int,
     Assign,
+    Eq,
+    NotEq,
     Plus,
+    Minus,
+    Bang,
+    Asterisk,
+    Slash,
+    Lt,
+    Gt,
     Comma,
     Semicolon,
     LParen,
@@ -17,6 +25,11 @@ pub enum TokenType {
     RBrace,
     Function,
     Let,
+    True,
+    False,
+    If,
+    Else,
+    Return,
 }
 
 impl fmt::Display for TokenType {
@@ -27,7 +40,15 @@ impl fmt::Display for TokenType {
             TokenType::Ident => "IDENT",
             TokenType::Int => "INT",
             TokenType::Assign => "=",
+            TokenType::Eq => "==",
+            TokenType::NotEq => "!=",
             TokenType::Plus => "+",
+            TokenType::Minus => "-",
+            TokenType::Bang => "!",
+            TokenType::Asterisk => "*",
+            TokenType::Slash => "/",
+            TokenType::Lt => "<",
+            TokenType::Gt => ">",
             TokenType::Comma => ",",
             TokenType::Semicolon => ";",
             TokenType::LParen => "(",
@@ -35,7 +56,12 @@ impl fmt::Display for TokenType {
             TokenType::LBrace => "{",
             TokenType::RBrace => "}",
             TokenType::Function => "FUNCTION",
-            TokenType::Let => "LET"
+            TokenType::Let => "LET",
+            TokenType::True => "TRUE",
+            TokenType::False => "FALSE",
+            TokenType::If => "IF",
+            TokenType::Else => "ELSE",
+            TokenType::Return => "RETURN",
         };
         write!(f, "{tt}")
     }
@@ -53,6 +79,11 @@ fn keywords(key: &str) -> TokenType {
     match key {
         "fn" => TokenType::Function,
         "let" => TokenType::Let,
+        "true" => TokenType::True,
+        "false" => TokenType::False,
+        "if" => TokenType::If,
+        "else" => TokenType::Else,
+        "return" => TokenType::Return,
         _  => TokenType::Illegal
     }
 }

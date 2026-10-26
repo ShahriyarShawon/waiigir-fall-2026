@@ -32,7 +32,6 @@ impl Lexer {
         self.read_position += 1;
     }
 
-
     fn skip_whitespace(&mut self) {
         loop {
             if self.ch.is_whitespace() {
@@ -43,20 +42,51 @@ impl Lexer {
         }
     }
 
+    fn peek_char(&self) -> char {
+        if self.read_position >= self.input.len() {
+            '\0'
+        } else {
+            self.input
+                .chars()
+                .nth(self.read_position)
+                .expect("Looked ahead")
+        }
+    }
+
     fn next_token(&mut self) -> Token {
         let mut tok = Token::default();
 
         self.skip_whitespace();
 
         match self.ch {
-            '=' => tok = new_token(TokenType::Assign, self.ch),
-            ';' => tok = new_token(TokenType::Semicolon, self.ch),
-            '(' => tok = new_token(TokenType::LParen, self.ch),
-            ')' => tok = new_token(TokenType::RParen, self.ch),
-            ',' => tok = new_token(TokenType::Comma, self.ch),
-            '+' => tok = new_token(TokenType::Plus, self.ch),
-            '{' => tok = new_token(TokenType::LBrace, self.ch),
-            '}' => tok = new_token(TokenType::RBrace, self.ch),
+            '=' => match self.peek_char() {
+                '=' => {
+                    let ch = self.ch;
+                    self.read_char();
+                    tok = new_token(TokenType::Eq, &format!("{}{}", ch, self.ch))
+                }
+                _ => tok = new_token(TokenType::Assign, &self.ch.to_string()),
+            },
+            ';' => tok = new_token(TokenType::Semicolon, &self.ch.to_string()),
+            '(' => tok = new_token(TokenType::LParen, &self.ch.to_string()),
+            ')' => tok = new_token(TokenType::RParen, &self.ch.to_string()),
+            ',' => tok = new_token(TokenType::Comma, &self.ch.to_string()),
+            '+' => tok = new_token(TokenType::Plus, &self.ch.to_string()),
+            '-' => tok = new_token(TokenType::Minus, &self.ch.to_string()),
+            '!' => match self.peek_char() {
+                '=' => {
+                    let ch = self.ch;
+                    self.read_char();
+                    tok = new_token(TokenType::NotEq, &format!("{}{}", ch, self.ch))
+                }
+                _ => tok = new_token(TokenType::Bang, &self.ch.to_string()),
+            },
+            '*' => tok = new_token(TokenType::Asterisk, &self.ch.to_string()),
+            '/' => tok = new_token(TokenType::Slash, &self.ch.to_string()),
+            '<' => tok = new_token(TokenType::Lt, &self.ch.to_string()),
+            '>' => tok = new_token(TokenType::Gt, &self.ch.to_string()),
+            '{' => tok = new_token(TokenType::LBrace, &self.ch.to_string()),
+            '}' => tok = new_token(TokenType::RBrace, &self.ch.to_string()),
             '\0' => {
                 tok.literal = "".to_string();
                 tok.ttype = TokenType::Eof;
@@ -70,8 +100,7 @@ impl Lexer {
                     tok.ttype = TokenType::Int;
                     tok.literal = self.read_number();
                     return tok;
-                }
-                else {
+                } else {
                     tok.literal = "".to_string();
                     tok.ttype = TokenType::Illegal;
                 }
@@ -95,7 +124,7 @@ impl Lexer {
         temp_str[pos..self.position].to_string()
     }
 
-    fn read_number(&mut self) -> String{
+    fn read_number(&mut self) -> String {
         let pos = self.position;
         loop {
             if self.ch.is_numeric() {
@@ -109,10 +138,10 @@ impl Lexer {
     }
 }
 
-fn new_token(token_type: TokenType, ch: char) -> Token {
+fn new_token(token_type: TokenType, literal: &str) -> Token {
     return Token {
         ttype: token_type,
-        literal: ch.to_string(),
+        literal: literal.to_string(),
     };
 }
 
@@ -130,6 +159,15 @@ let add = fn(x, y) {
 x + y;
 };
 let result = add(five, ten);
+!-/*5;
+5 < 10 > 5;
+if (5 < 10) {
+return true;
+} else {
+return false;
+}
+10 == 10;
+10 != 9;
 ";
         let expected = [
             (TokenType::Let, "let"),
@@ -167,6 +205,43 @@ let result = add(five, ten);
             (TokenType::Comma, ","),
             (TokenType::Ident, "ten"),
             (TokenType::RParen, ")"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Bang, "!"),
+            (TokenType::Minus, "-"),
+            (TokenType::Slash, "/"),
+            (TokenType::Asterisk, "*"),
+            (TokenType::Int, "5"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Int, "5"),
+            (TokenType::Lt, "<"),
+            (TokenType::Int, "10"),
+            (TokenType::Gt, ">"),
+            (TokenType::Int, "5"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::If, "if"),
+            (TokenType::LParen, "("),
+            (TokenType::Int, "5"),
+            (TokenType::Lt, "<"),
+            (TokenType::Int, "10"),
+            (TokenType::RParen, ")"),
+            (TokenType::LBrace, "{"),
+            (TokenType::Return, "return"),
+            (TokenType::True, "true"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::RBrace, "}"),
+            (TokenType::Else, "else"),
+            (TokenType::LBrace, "{"),
+            (TokenType::Return, "return"),
+            (TokenType::False, "false"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::RBrace, "}"),
+            (TokenType::Int, "10"),
+            (TokenType::Eq, "=="),
+            (TokenType::Int, "10"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Int, "10"),
+            (TokenType::NotEq, "!="),
+            (TokenType::Int, "9"),
             (TokenType::Semicolon, ";"),
             (TokenType::Eof, ""),
         ];
