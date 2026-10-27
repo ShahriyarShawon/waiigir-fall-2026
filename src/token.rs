@@ -1,6 +1,7 @@
 use std::fmt;
+use crate::ast::{Expression};
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Default, Clone)]
 pub enum TokenType {
     #[default]
     Illegal,
@@ -68,7 +69,7 @@ impl fmt::Display for TokenType {
 
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Token {
     pub ttype: TokenType,
     pub literal: String
