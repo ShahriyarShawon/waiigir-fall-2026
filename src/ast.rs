@@ -30,12 +30,14 @@ pub struct Identifier {
 
 pub enum Statement {
     Let(LetStatement),
+    Return(ReturnStatement)
 }
 
 impl Node for Statement {
     fn token_literal(&self) -> String {
         match self {
-            Statement::Let(ls) => ls.token.literal.clone()
+            Statement::Let(ls) => ls.token.literal.clone(),
+            Statement::Return(rs) => rs.token.literal.clone()
         }
     }
 }
@@ -46,6 +48,12 @@ pub struct LetStatement {
     pub token: Token,
     pub name: Identifier,
     pub value: Expression,
+}
+
+#[derive(Debug, Default)]
+pub struct ReturnStatement {
+    pub token: Token,
+    pub return_value: Expression,
 }
 
 

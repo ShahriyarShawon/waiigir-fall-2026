@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Expression, Identifier, LetStatement, Program, Statement},
+    ast::{Expression, Identifier, LetStatement, Program, ReturnStatement, Statement},
     lexer::Lexer,
     token::{Token, TokenType},
 };
@@ -56,10 +56,35 @@ impl Parser {
                     None => None
                 }
             },
+            TokenType::Return => {
+                match self.parse_return_statement() {
+                    Some(rs) => Some(Statement::Return(rs)),
+                    None => None
+                }
+            }
             _ => None,
         }
     }
 
+    fn parse_return_statement(&mut self) -> Option<ReturnStatement> {
+        let mut stmt = ReturnStatement {
+            token: self.cur_token.clone(),
+            ..Default::default()
+        };
+
+        self.next_token();
+
+        // skip expressions
+        loop {
+            if self.cur_token_is(TokenType::Semicolon) {
+                self.next_token();
+            } else {
+                break;
+            }
+        }
+
+        Some(stmt)
+    }
     fn parse_let_statement(&mut self) -> Option<LetStatement> {
         let mut stmt = LetStatement {
             token: self.cur_token.clone(),
@@ -145,6 +170,35 @@ let foobar = 838383;
         }
     }
 
+    #[test]
+    fn return_statements() {
+        let input = "
+return 5;
+return 10;
+return 993322;
+";
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+        let program = parser.parse_program();
+        check_parser_errors(&parser);
+
+        assert_eq!(
+            program.statements.len(),
+            3,
+            "program.statements does not contain 3 statements"
+        );
+
+        for stmt in &program.statements {
+            let Statement::Return(return_stmt) = stmt else {
+                panic!("stmt not Statement::Return");
+            };
+            assert_eq!(
+                return_stmt.token.literal, "return",
+                "return_stmt.token_literal not 'return'"
+            );
+        }
+    }
+
     fn check_parser_errors(parser: &Parser) {
         assert!(
             parser.errors.is_empty(),
@@ -157,7 +211,7 @@ let foobar = 838383;
     fn test_let_statement(stmt: &Statement, name: &str) {
         assert_eq!(stmt.token_literal(), "let", "stmt.token_literal not 'let'");
 
-        let Statement::Let(let_stmt) = stmt;
+        let Statement::Let(let_stmt) = stmt else {todo!()};
         assert_eq!(
             let_stmt.name.value, name,
             "let_stmt.name.value not '{name}'"
